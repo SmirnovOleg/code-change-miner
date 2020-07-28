@@ -52,7 +52,7 @@ class GitAnalyzer:
         with open(self._data_file_dir, 'w+') as f:
             json.dump(self._data, f, indent=4)
 
-    def build_change_graphs(self):
+    def build_change_graphs(self, commit_filter=None):
         repo_names = [
             name for name in os.listdir(self.GIT_REPOSITORIES_DIR)
             if not name.startswith('_') and not name.startswith('.') and name not in self._data['visited']]
@@ -65,11 +65,11 @@ class GitAnalyzer:
 
         if GitAnalyzer.TRAVERSE_ASYNC:
             with multiprocessing.Pool(processes=multiprocessing.cpu_count(), maxtasksperchild=1000) as pool:
-                self._mine_changes(repo_names, pool=pool)
+                self._mine_changes(repo_names, pool=pool, commit_filter=commit_filter)
         else:
-            self._mine_changes(repo_names)
+            self._mine_changes(repo_names, commit_filter)
 
-    def _mine_changes(self, repo_names, pool=None):
+    def _mine_changes(self, repo_names, pool=None, commit_filter=None):
         for repo_num, repo_name in enumerate(repo_names):
             logger.warning(f'Looking at repo {repo_name} [{repo_num + 1}/{len(repo_names)}]')
 
@@ -77,7 +77,7 @@ class GitAnalyzer:
             self._save_data_file()
 
             start = time.time()
-            commits = self._extract_commits(repo_name)
+            commits = self._extract_commits(repo_name, commit_filter)
 
             if pool and len(commits) > 0:
                 try:
@@ -91,7 +91,7 @@ class GitAnalyzer:
             logger.warning(f'Done building change graphs for repo={repo_name} [{repo_num + 1}/{len(repo_names)}]',
                            start_time=start)
 
-    def _extract_commits(self, repo_name):
+    def _extract_commits(self, repo_name, commit_filter=None):
         start = time.time()
 
         repo_path = os.path.join(self.GIT_REPOSITORIES_DIR, repo_name)
@@ -111,7 +111,7 @@ class GitAnalyzer:
                     'email': commit.author.email,
                     'name': commit.author.name
                 } if commit.author else None,
-                'num': len(commits)+1,
+                'num': len(commits) + 1,
                 'hash': commit.hash,
                 'dtm': commit.committer_date,
                 'msg': commit.msg,
@@ -134,7 +134,8 @@ class GitAnalyzer:
                     'new_path': mod.new_path
                 })
 
-            commits.append(cut)
+            if commit_filter is not None and commit.hash in commit_filter.get(repo_name, {}) or commit_filter is None:
+                commits.append(cut)
 
         logger.log(logger.WARNING, 'Commits extracted', start_time=start)
         return commits
