@@ -89,7 +89,7 @@ class GraphBuilder:
             else:
                 for in_node in in_nodes:
                     if not node.has_in_edge(in_node, edge.label):
-                        in_node.create_edge(node, edge.label)
+                        in_node.create_edge(node, edge.label, from_closure=True)
 
             for in_node in in_nodes:
                 if in_node not in processed_nodes:
@@ -108,7 +108,7 @@ class GraphBuilder:
                                     continue
 
                             if not node.has_in_edge(after_in_node, edge.label):
-                                after_in_node.create_edge(node, edge.label)
+                                after_in_node.create_edge(node, edge.label, from_closure=True)
 
         processed_nodes.add(node)
 
@@ -126,7 +126,7 @@ class GraphBuilder:
                 if not isinstance(e, ControlEdge):
                     continue
 
-                in_control2.create_control_edge(node, e.branch_kind)
+                in_control2.create_control_edge(node, e.branch_kind, from_closure=True)
 
         processed_nodes.add(node)
 
@@ -178,7 +178,7 @@ class GraphBuilder:
                             break
                     branch_kind = in_lowest_e.branch_kind
 
-                in_node2.create_control_edge(node, branch_kind, add_to_stack=False)
+                in_node2.create_control_edge(node, branch_kind, add_to_stack=False, from_closure=True)
                 logger.debug(f'Created control edge from {in_node2} to {node} with kind = {branch_kind} '
                              f'for node={node}, in_node={in_node}, in_node2={in_node2}')
                 visited.add(in_node2)

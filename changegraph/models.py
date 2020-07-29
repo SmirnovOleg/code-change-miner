@@ -143,14 +143,15 @@ class ChangeNode:  # todo: create base class for pfg and cg
 
 
 class ChangeEdge:
-    def __init__(self, label, node_from, node_to):
+    def __init__(self, label, node_from, node_to, from_closure=False):
         self.node_from = node_from
         self.node_to = node_to
         self.label = label
+        self.from_closure = from_closure
 
     @classmethod
-    def create(cls, label, node_from, node_to):
-        created = ChangeEdge(label, node_from, node_to)
+    def create(cls, label, node_from, node_to, from_closure=False):
+        created = ChangeEdge(label, node_from, node_to, from_closure)
 
         node_from.out_edges.add(created)
         node_to.in_edges.add(created)

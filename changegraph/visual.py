@@ -53,7 +53,7 @@ def _get_nodes_digraph(nodes: set, file_name, separate_mapped=True):
                 continue
 
             label = edge.label
-            attrs = {}
+            attrs = {'from_closure': str(edge.from_closure)}
 
             vg.edge(f'{edge.node_from.id}', f'{edge.node_to.id}', xlabel=label, _attributes=attrs)
 

@@ -80,7 +80,10 @@ class ChangeGraphBuilder:  # TODO: make gumtree optional
         for fg_node in fg_changed_nodes:
             for e in fg_node.in_edges:
                 if e.node_from in fg_changed_nodes:
-                    ChangeEdge.create(e.label, fg_node_to_cg_node[e.node_from], fg_node_to_cg_node[e.node_to])
+                    ChangeEdge.create(label=e.label,
+                                      node_from=fg_node_to_cg_node[e.node_from],
+                                      node_to=fg_node_to_cg_node[e.node_to],
+                                      from_closure=e.from_closure)
         return cg
 
 

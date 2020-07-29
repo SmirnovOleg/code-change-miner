@@ -58,8 +58,8 @@ class Node:
                 defs.add(e.node_from)
         return defs
 
-    def create_edge(self, node_to, link_type):
-        e = DataEdge(link_type, node_from=self, node_to=node_to)
+    def create_edge(self, node_to, link_type, from_closure=False):
+        e = DataEdge(link_type, node_from=self, node_to=node_to, from_closure=from_closure)
         self.out_edges.add(e)
         node_to.in_edges.add(e)
 
@@ -136,8 +136,8 @@ class StatementNode(Node):
         _, branch_kind = self.control_branch_stack[-1]
         return branch_kind
 
-    def create_control_edge(self, node_to, branch_kind, /, add_to_stack=True):
-        e = ControlEdge(node_from=self, node_to=node_to, branch_kind=branch_kind)
+    def create_control_edge(self, node_to, branch_kind, /, add_to_stack=True, from_closure=False):
+        e = ControlEdge(node_from=self, node_to=node_to, branch_kind=branch_kind, from_closure=from_closure)
         self.out_edges.add(e)
         node_to.in_edges.add(e)
 
@@ -215,18 +215,19 @@ class EntryNode(ControlNode):
 
 
 class Edge:
-    def __init__(self, label, node_from, node_to):
+    def __init__(self, label, node_from, node_to, from_closure=False):
         self.label = label
         self.node_from = node_from
         self.node_to = node_to
+        self.from_closure = from_closure
 
     def __repr__(self):
         return f'{self.node_from} ={self.label}> {self.node_to}'
 
 
 class ControlEdge(Edge):
-    def __init__(self, /, *, node_from, node_to, branch_kind=True):
-        super().__init__('control', node_from, node_to)
+    def __init__(self, /, *, node_from, node_to, branch_kind=True, from_closure=False):
+        super().__init__('control', node_from, node_to, from_closure)
         self.branch_kind = branch_kind
 
     def __repr__(self):
@@ -234,8 +235,9 @@ class ControlEdge(Edge):
 
 
 class DataEdge(Edge):
-    def __init__(self, label, node_from, node_to):  # FIXME: DO NO CONSIDER LABEL AS LINK_TYPE, DEFINE A NEW INDICATOR
-        super().__init__(label, node_from, node_to)
+    # FIXME: DO NO CONSIDER LABEL AS LINK_TYPE, DEFINE A NEW INDICATOR
+    def __init__(self, label, node_from, node_to, from_closure=False):
+        super().__init__(label, node_from, node_to, from_closure)
 
 
 class LinkType:

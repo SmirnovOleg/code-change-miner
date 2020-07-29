@@ -68,7 +68,7 @@ def _convert_to_visual_graph(graph: ExtControlFlowGraph, file_name: str,
                 continue
 
             label = edge.label
-            attrs = {}
+            attrs = {'from_closure': str(edge.from_closure)}
 
             if show_control_branch and isinstance(edge, ControlEdge):
                 label = f'{"T" if edge.branch_kind else "F"} {label}'
