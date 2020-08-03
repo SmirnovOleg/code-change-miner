@@ -1,4 +1,5 @@
 from . import visual
+from . import models
 from .build import ChangeGraphBuilder
 
 

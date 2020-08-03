@@ -1,7 +1,9 @@
 import graphviz as gv
 import os
 
-from pyflowgraph.models import ExtControlFlowGraph, DataNode, OperationNode, ControlNode, ControlEdge, DataEdge, EntryNode
+import changegraph
+from pyflowgraph.models import ExtControlFlowGraph, DataNode, OperationNode, ControlNode, ControlEdge, DataEdge, \
+    EntryNode
 
 
 def _get_label_and_attrs(node, show_op_kind=True, show_data_keys=False):
@@ -28,8 +30,7 @@ def _get_label_and_attrs(node, show_op_kind=True, show_data_keys=False):
 def _convert_to_visual_graph(graph: ExtControlFlowGraph, file_name: str,
                              show_op_kinds=True, show_data_keys=False, show_control_branch=False,
                              separate_mapped=True, show_entry_node=True,
-                             min_statement_num=None, max_statement_num=None):
-
+                             min_statement_num=None, max_statement_num=None, view_type='pfg'):
     vg = gv.Digraph(name=file_name, format='pdf')
 
     used = {}
@@ -57,7 +58,14 @@ def _convert_to_visual_graph(graph: ExtControlFlowGraph, file_name: str,
             s.graph_attr.update(rank=rank)
             vg.subgraph(s)
         else:
-            label, attrs = _get_label_and_attrs(node, show_op_kind=show_op_kinds, show_data_keys=show_data_keys)
+            if view_type == 'pfg':
+                label, attrs = _get_label_and_attrs(node, show_op_kind=show_op_kinds, show_data_keys=show_data_keys)
+                vg.node(f'{node.statement_num}', label=label, _attributes=attrs)
+            elif view_type == 'cg':
+                cg_node = changegraph.models.ChangeNode.create_from_fg_node(node)
+                label, attrs = changegraph.visual._get_label_and_attrs(cg_node)
+            else:
+                raise UnknownViewTypeError
             vg.node(f'{node.statement_num}', label=label, _attributes=attrs)
 
     for node in graph.nodes:
@@ -84,5 +92,10 @@ def _convert_to_visual_graph(graph: ExtControlFlowGraph, file_name: str,
 def export_graph_image(graph: ExtControlFlowGraph, path: str = 'pfg.dot', show_op_kinds=True, show_data_keys=False):
     directory, file_name = os.path.split(path)
     visual_graph = _convert_to_visual_graph(graph, file_name, show_control_branch=True,
-                                            show_op_kinds=show_op_kinds, show_data_keys=show_data_keys)
+                                            show_op_kinds=show_op_kinds, show_data_keys=show_data_keys,
+                                            view_type='cg')
     visual_graph.render(path)
+
+
+class UnknownViewTypeError(Exception):
+    pass
