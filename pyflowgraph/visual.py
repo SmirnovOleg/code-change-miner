@@ -91,7 +91,7 @@ def _convert_to_visual_graph(graph: ExtControlFlowGraph, file_name: str,
 
 def export_graph_image(graph: ExtControlFlowGraph, path: str = 'pfg.dot', show_op_kinds=True, show_data_keys=False):
     directory, file_name = os.path.split(path)
-    visual_graph = _convert_to_visual_graph(graph, file_name, show_control_branch=True,
+    visual_graph = _convert_to_visual_graph(graph, file_name, show_control_branch=False,
                                             show_op_kinds=show_op_kinds, show_data_keys=show_data_keys,
                                             view_type='cg')
     visual_graph.render(path)
